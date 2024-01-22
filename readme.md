@@ -8,5 +8,6 @@ Install required package
 
 Open `powershel` for run the main python file
 ```bash
+  cd "path-to-file"
   python .\main.py
 ```
