@@ -68,17 +68,18 @@ while global_run:
     
     if answers["command"] == "/queue":
         all_list = music_list(queue.get())
-        all_list.append(">>> Menu Utama <<<")
         answers = inquirer.prompt([
-            inquirer.List(
-                "queue",
+            inquirer.Checkbox(
+                "command",
                 message="Pilih lagu yang ingin ditambahkan ke antrian",
-                choices= all_list,
-            )
+                choices=all_list,
+            ),
+            inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
         ])
         
-        if answers["queue"] != ">>> Menu Utama <<<":
-            queue.enqueue(answers["queue"])
+        if answers["stop"]:
+            for music in answers["command"]:
+                queue.enqueue(music)
     elif answers["command"] == "/play":
         threading.Thread(target=play_music).start()
     elif answers["command"] == "/pause":
