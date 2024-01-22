@@ -1,5 +1,4 @@
 import os, sys, pygame, time, threading
-from tabulate import tabulate
 from function import music_list, logo, paginate_list
 from pprint import pprint
 
