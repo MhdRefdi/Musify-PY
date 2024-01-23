@@ -1,4 +1,4 @@
-import os
+import os, re
 from pyfiglet import Figlet
 
 def logo():
@@ -32,3 +32,13 @@ def change_file_extension(file_path, new_extension=".txt"):
 
     except Exception as e:
         print(f"Terjadi kesalahan: {e}")
+
+def search_substring(substring, my_list = []):
+    
+    lower_list = []
+    for list_h in my_list:
+        lower_list.append(list_h.lower())
+    substring = substring.lower()
+    pattern = re.compile(re.escape(substring), re.IGNORECASE)
+    indices = [my_list[index] for index, word in enumerate(my_list) if re.search(pattern, word)]
+    return indices

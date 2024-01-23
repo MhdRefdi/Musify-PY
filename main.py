@@ -1,5 +1,5 @@
 import os, sys, pygame, time, threading, random
-from function import music_list, logo, paginate_list, change_file_extension
+from function import music_list, logo, paginate_list, change_file_extension, search_substring
 from pprint import pprint
 
 sys.path.append(os.path.realpath("."))
@@ -47,7 +47,8 @@ music_commands = {
     "/exit": "Keluar program",
     "/page": "Mengatur halaman",
     "/lyrics": "Menampilkan lirik lagu",
-    "/shuffle": "Mengacak lagu"
+    "/shuffle": "Mengacak lagu",
+    "/search": "Mencari lagu"
 }
 
 pygame.mixer.init()
@@ -60,6 +61,24 @@ def play_music():
             pygame.mixer.music.load(f"music/{music}")
             pygame.mixer.music.play()
             active_song = change_file_extension(music)
+
+def select_music(musics = None):
+    if musics is None:
+        all_list = music_list(queue.get())
+    else:
+        all_list = musics
+    answers = inquirer.prompt([
+        inquirer.Checkbox(
+            "command",
+            message="Pilih lagu yang ingin ditambahkan ke antrian",
+            choices=all_list,
+        ),
+        inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
+    ])
+    
+    if answers["stop"]:
+        for music in answers["command"]:
+            queue.enqueue(music)
 
 per_page = 5
 current_page = 1
@@ -80,20 +99,15 @@ while True:
     ])
 
     match answers["command"]:
-        case '/queue':
-            all_list = music_list(queue.get())
+        case '/search':
             answers = inquirer.prompt([
-                inquirer.Checkbox(
-                    "command",
-                    message="Pilih lagu yang ingin ditambahkan ke antrian",
-                    choices=all_list,
-                ),
-                inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
+                inquirer.Text("command", message="Masukkan judul lagu")
             ])
             
-            if answers["stop"]:
-                for music in answers["command"]:
-                    queue.enqueue(music)
+            select_music(search_substring(answers["command"], music_list(queue.get())))
+
+        case '/queue':
+            select_music()
 
         case '/play':
             threading.Thread(target=play_music).start()
