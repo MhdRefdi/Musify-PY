@@ -1,5 +1,5 @@
 import os, sys, pygame, time, threading
-from function import music_list, logo, paginate_list
+from function import music_list, logo, paginate_list, change_file_extension
 from pprint import pprint
 
 sys.path.append(os.path.realpath("."))
@@ -41,17 +41,23 @@ music_commands = {
     "/prevpage": "Membuka halaman sebelumnya",
     "/exit": "Keluar program",
     "/page": "Mengatur halaman",
+    "/lyrics": "Menampilkan lirik lagu",
 }
 
 pygame.mixer.init()
 def play_music():
+    global active_song
+    active_song = None
     while not queue.is_empty():
         if not pygame.mixer.music.get_busy() and not pygame.mixer.music.get_pos() > 0:
-            pygame.mixer.music.load(f"music/{queue.dequeue()}")
+            music = queue.dequeue()
+            pygame.mixer.music.load(f"music/{music}")
             pygame.mixer.music.play()
+            active_song = change_file_extension(music)
 
 per_page = 5
 current_page = 1
+active_song = None
 total_page = (len(queue.get()) // per_page) + 1 if len(queue.get()) % per_page != 0 else len(queue.get()) // per_page
 while True:
     logo()
@@ -103,7 +109,6 @@ while True:
             if pygame.mixer.music.get_busy():
                 pygame.mixer.music.stop()
                 queue.items = []
-
         
         case '/nextpage':
             if current_page == ((len(queue.get()) // per_page) + 1):
@@ -150,6 +155,22 @@ while True:
                 
                 per_page = int(answers["command"])
 
+        case '/lyrics':
+            file_path = f"music/lyrics/{active_song}"
+            try:
+                os.system("clear")
+                with open(file_path, 'r') as file:
+                    file_content = file.read()
+                    print(file_content)
+
+            except FileNotFoundError:
+                input(f"File tidak ditemukan di path: {file_path}")
+
+            except Exception as e:
+                input(f"Terjadi kesalahan: {e}")
+            
+            input("\nPress enter to continue...")
+            
         case '/exit':
             pygame.mixer.music.stop()
             pygame.quit()
