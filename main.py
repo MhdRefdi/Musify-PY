@@ -61,100 +61,111 @@ while global_run:
     for i, music in enumerate(paginate_list(queue.get(), per_page, current_page)):
         print(f"{i+1}. {music}")
     if len(queue.get()) > 0:
-        total_page = (len(queue.get()) // per_page) + 1 if len(queue.get()) % per_page != 0 else len(queue.get()) // per_page
-        print(f"\n>>> Page {current_page}/{max(1, total_page)} <<<")
+        print(f"\n>>> Page {current_page}/{max(1, ((len(queue.get()) // per_page) + 1))} <<<")
 
     print("\n/help untuk menampilkan list semua perintah yang ada")
     answers = inquirer.prompt([
         inquirer.Text("command", message="Masukkan perintah"),
     ])
-    
-    if answers["command"] == "/queue":
-        all_list = music_list(queue.get())
-        answers = inquirer.prompt([
-            inquirer.Checkbox(
-                "command",
-                message="Pilih lagu yang ingin ditambahkan ke antrian",
-                choices=all_list,
-            ),
-            inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
-        ])
-        
-        if answers["stop"]:
-            for music in answers["command"]:
-                queue.enqueue(music)
-    elif answers["command"] == "/play":
-        threading.Thread(target=play_music).start()
-    elif answers["command"] == "/pause":
-        if pygame.mixer.music.get_busy():
-            pygame.mixer.music.pause()
-    elif answers["command"] == "/unpause":
-        if not pygame.mixer.music.get_busy():
-            pygame.mixer.music.unpause()
-    elif answers["command"] == "/skip":
-        if pygame.mixer.music.get_busy():
-            pygame.mixer.music.stop()
-        threading.Thread(target=play_music).start()
-    elif answers["command"] == "/stop":
-        if pygame.mixer.music.get_busy():
-            pygame.mixer.music.stop()
-            queue.items = []
-    elif answers["command"] == "/nextpage":
-        if current_page == ((len(queue.get()) // per_page) + 1):
-            current_page = 1
-        else:
-            current_page += 1
-    elif answers["command"] == "/prevpage":
-        if current_page == 1:
-            current_page = ((len(queue.get()) // per_page) + 1)
-        else:
-            current_page -= 1
-    elif answers["command"] == "/page" and total_page > 0:
-        answers = inquirer.prompt([
-            inquirer.List(
-                "command",
-                message="Pilih pengaturan halaman",
-                choices=["Paginate", "Per Page"],
-            ),
-        ])
-        
-        if answers["command"] == "Paginate":
-            pages = [f"Page {i}" for i in range(1, total_page + 1)]
+
+    match answers["command"]:
+        case '/queue':
+            all_list = music_list(queue.get())
+            answers = inquirer.prompt([
+                inquirer.Checkbox(
+                    "command",
+                    message="Pilih lagu yang ingin ditambahkan ke antrian",
+                    choices=all_list,
+                ),
+                inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
+            ])
             
+            if answers["stop"]:
+                for music in answers["command"]:
+                    queue.enqueue(music)
+
+        case '/play':
+            threading.Thread(target=play_music).start()
+
+        case '/pause':
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.pause()
+    
+        case '/unpause':
+            if not pygame.mixer.music.get_busy():
+                pygame.mixer.music.unpause()
+  
+        case '/skip':
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.stop()
+            threading.Thread(target=play_music).start()
+
+        case '/stop':
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.stop()
+                queue.items = []
+
+        
+        case '/nextpage':
+            if current_page == ((len(queue.get()) // per_page) + 1):
+                current_page = 1
+            else:
+                current_page += 1
+ 
+        case '/prevpage':
+            if current_page == 1:
+                current_page = ((len(queue.get()) // per_page) + 1)
+            else:
+                current_page -= 1
+
+        case '/page':
             answers = inquirer.prompt([
                 inquirer.List(
                     "command",
-                    message="Ganti halaman",
-                    choices=pages,
+                    message="Pilih pengaturan halaman",
+                    choices=["Paginate", "Per Page"],
                 ),
             ])
             
-            current_page = pages.index(answers["command"]) + 1
-        elif answers["command"] == "Per Page":
-            per_page = [5, 10, 15, 20]
-            answers = inquirer.prompt([
-                inquirer.List(
-                    "command",
-                    message="Ganti jumlah per halaman",
-                    choices=per_page,
-                )
-            ])
-            
-            per_page = int(answers["command"])
-    elif answers["command"] == "/exit":
-        pygame.mixer.music.stop()
-        pygame.quit()
-        sys.exit()
-    elif answers["command"] == "/help":
-        logo()
-        
-        for key, value in music_commands.items():
-            print(key, ":", value)
-        
-        answers = inquirer.prompt([
-            inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
-        ])
-        if not answers["stop"]:
+            if answers["command"] == "Paginate":
+                pages = [f"Page {i}" for i in range(1, total_page + 1)]
+                
+                answers = inquirer.prompt([
+                    inquirer.List(
+                        "command",
+                        message="Ganti halaman",
+                        choices=pages,
+                    ),
+                ])
+                
+                current_page = pages.index(answers["command"]) + 1
+            elif answers["command"] == "Per Page":
+                per_page = [5, 10, 15, 20]
+                answers = inquirer.prompt([
+                    inquirer.List(
+                        "command",
+                        message="Ganti jumlah per halaman",
+                        choices=per_page,
+                    )
+                ])
+                
+                per_page = int(answers["command"])
+
+        case '/exit':
             pygame.mixer.music.stop()
             pygame.quit()
             sys.exit()
+   
+        case '/help':
+            logo()
+        
+            for key, value in music_commands.items():
+                print(key, ":", value)
+            
+            answers = inquirer.prompt([
+                inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
+            ])
+            if not answers["stop"]:
+                pygame.mixer.music.stop()
+                pygame.quit()
+                sys.exit()
