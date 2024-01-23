@@ -1,9 +1,11 @@
-import os, sys, pygame, time, threading
+import os, sys, pygame, time, threading, random
 from function import music_list, logo, paginate_list, change_file_extension
 from pprint import pprint
 
 sys.path.append(os.path.realpath("."))
 import inquirer
+
+import random
 
 class Queue:
     def __init__(self):
@@ -17,15 +19,18 @@ class Queue:
 
     def dequeue(self):
         if not self.is_empty():
-          return self.items.pop(0)
+            return self.items.pop(0)
         else:
-          print("Antrian kosong!")
+            print("Antrian kosong!")
 
     def size(self):
         return len(self.items)
 
     def get(self):
         return self.items.copy()
+
+    def shuffle(self):
+        random.shuffle(self.items)
 
 queue = Queue()
 
@@ -42,6 +47,7 @@ music_commands = {
     "/exit": "Keluar program",
     "/page": "Mengatur halaman",
     "/lyrics": "Menampilkan lirik lagu",
+    "/shuffle": "Mengacak lagu"
 }
 
 pygame.mixer.init()
@@ -122,6 +128,10 @@ while True:
             else:
                 current_page -= 1
 
+        case '/shuffle':
+            if not queue.is_empty():
+                queue.shuffle()
+            
         case '/page':
             answers = inquirer.prompt([
                 inquirer.List(
