@@ -52,9 +52,8 @@ def play_music():
 
 per_page = 5
 current_page = 1
-global_run = True
 total_page = (len(queue.get()) // per_page) + 1 if len(queue.get()) % per_page != 0 else len(queue.get()) // per_page
-while global_run:
+while True:
     logo()
 
     print("Queue Music List:")
