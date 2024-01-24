@@ -41,14 +41,20 @@ music_commands = {
     "/stop": "Menghapus semua lagu di antrian dan menghentikan lagu",
     "/pause": "Menghentikan lagu",
     "/unpause": "Melanjutkan lagu",
-    "/help": "Menampilkan list semua perintah yang ada",
-    "/nextpage": "Membuka halaman berikutnya",
-    "/prevpage": "Membuka halaman sebelumnya",
-    "/exit": "Keluar program",
-    "/page": "Mengatur halaman",
     "/lyrics": "Menampilkan lirik lagu",
     "/shuffle": "Mengacak lagu",
     "/search": "Mencari lagu"
+}
+
+pangination_commands = {
+    "/page": "Mengatur halaman",
+    "/nextpage": "Membuka halaman berikutnya",
+    "/prevpage": "Membuka halaman sebelumnya",
+}
+
+system_commands = {
+    "/help": "Menampilkan list semua perintah yang ada",
+    "/exit": "Keluar program",
 }
 
 pygame.mixer.init()
@@ -203,8 +209,17 @@ while True:
         case '/help':
             logo()
         
+            print(" Music Command ".center(30, "="))
             for key, value in music_commands.items():
-                print(key, ":", value)
+                print(f"{key}: {value}")
+            
+            print("\n" + " Pangination Command ".center(30, "="))
+            for key, value in pangination_commands.items():
+                print(f"{key}: {value}")
+            
+            print("\n" + " System Command ".center(30, "="))
+            for key, value in system_commands.items():
+                print(f"{key}: {value}")
             
             answers = inquirer.prompt([
                 inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
