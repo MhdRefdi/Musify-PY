@@ -1,6 +1,5 @@
 import os, sys, pygame, time, threading, random
-from function import music_list, logo, paginate_list, change_file_extension, search_substring
-from pprint import pprint
+from function import music_list, logo, paginate_list, change_file_extension, search_music
 
 sys.path.append(os.path.realpath("."))
 import inquirer
@@ -67,29 +66,38 @@ def play_music():
             pygame.mixer.music.load(f"music/{music}")
             pygame.mixer.music.play()
             active_song = change_file_extension(music)
+        else:
+            time.sleep(1)
 
 def select_music(musics = None):
     if musics is None:
         all_list = music_list(queue.get())
     else:
         all_list = musics
+    
+    if all_list == []:
+        all_list = [""]
+    
     answers = inquirer.prompt([
         inquirer.Checkbox(
             "command",
             message="Pilih lagu yang ingin ditambahkan ke antrian",
             choices=all_list,
+            default=[""]
         ),
-        inquirer.Confirm("stop", message="Apakah anda ingin melanjukan program?", default=True)
+        inquirer.Confirm("stop", message="Apakah anda yakin melanjutkan?", default=True)
     ])
     
     if answers["stop"]:
         for music in answers["command"]:
-            queue.enqueue(music)
+            if music in music_list(queue.get()):
+                queue.enqueue(music)
 
 per_page = 5
 current_page = 1
 active_song = None
 total_page = (len(queue.get()) // per_page) + 1 if len(queue.get()) % per_page != 0 else len(queue.get()) // per_page
+
 while True:
     logo()
 
@@ -110,31 +118,28 @@ while True:
                 inquirer.Text("command", message="Masukkan judul lagu")
             ])
             
-            select_music(search_substring(answers["command"], music_list(queue.get())))
+            select_music(search_music(answers["command"], music_list(queue.get())))
 
         case '/queue':
             select_music()
 
         case '/play':
-            threading.Thread(target=play_music).start()
+            threading.Thread(target=play_music, daemon=True).start()
 
         case '/pause':
-            if pygame.mixer.music.get_busy():
-                pygame.mixer.music.pause()
+            pygame.mixer.music.pause()
     
         case '/unpause':
-            if not pygame.mixer.music.get_busy():
-                pygame.mixer.music.unpause()
+            pygame.mixer.music.unpause()
   
         case '/skip':
-            if pygame.mixer.music.get_busy():
+            if not queue.is_empty():
                 pygame.mixer.music.stop()
-            threading.Thread(target=play_music).start()
+                threading.Thread(target=play_music, daemon=True).start()
 
         case '/stop':
-            if pygame.mixer.music.get_busy():
-                pygame.mixer.music.stop()
-                queue.items = []
+            pygame.mixer.music.stop()
+            queue.items = []
         
         case '/nextpage':
             if current_page == ((len(queue.get()) // per_page) + 1):

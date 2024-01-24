@@ -1,6 +1,42 @@
 import os, re
 from pyfiglet import Figlet
 
+class TreeNode:
+    def __init__(self, music_data):
+        self.music_data = music_data
+        self.left = None
+        self.right = None
+
+class MusicBST:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, music_data):
+        self.root = self._insert(self.root, music_data)
+
+    def _insert(self, node, music_data):
+        if node is None:
+            return TreeNode(music_data)
+
+        if music_data < node.music_data:
+            node.left = self._insert(node.left, music_data)
+        elif music_data > node.music_data:
+            node.right = self._insert(node.right, music_data)
+
+        return node
+
+    def search(self, substring):
+        result = []
+        self._search(self.root, substring, result)
+        return result
+
+    def _search(self, node, substring, result):
+        if node:
+            self._search(node.left, substring, result)
+            if re.search(re.escape(substring), node.music_data, re.IGNORECASE):
+                result.append(node.music_data)
+            self._search(node.right, substring, result)
+
 def logo():
     os.system('clear')
     figlet = Figlet(font='larry3d')
@@ -33,12 +69,9 @@ def change_file_extension(file_path, new_extension=".txt"):
     except Exception as e:
         print(f"Terjadi kesalahan: {e}")
 
-def search_substring(substring, my_list = []):
-    
-    lower_list = []
-    for list_h in my_list:
-        lower_list.append(list_h.lower())
+def search_music(substring, my_list = []):
     substring = substring.lower()
-    pattern = re.compile(re.escape(substring), re.IGNORECASE)
-    indices = [my_list[index] for index, word in enumerate(my_list) if re.search(pattern, word)]
-    return indices
+    music_bst = MusicBST()
+    for music in my_list:
+        music_bst.insert(music)
+    return music_bst.search(substring)
